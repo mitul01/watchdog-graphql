@@ -46,7 +46,7 @@ jobs:
           cache: maven
       - name: Build with Maven
         run: |
-          apt-get update
-          apt-get install --yes --no-install-recommends postgresql-client
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends postgresql-client
           psql -h postgres -U postgres -c 'CREATE DATABASE watchdog'
           mvn -B package --file pom.xml
