@@ -45,10 +45,8 @@ jobs:
           distribution: "temurin"
           cache: maven
       - name: Build with Maven
-      - run: |
+        run: |
           apt-get update
           apt-get install --yes --no-install-recommends postgresql-client
-      - run: |
           psql -h postgres -U postgres -c 'CREATE DATABASE watchdog'
-      - run: |
           mvn -B package --file pom.xml
