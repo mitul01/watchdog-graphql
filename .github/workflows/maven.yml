@@ -44,5 +44,7 @@ jobs:
           java-version: "17"
           distribution: "temurin"
           cache: maven
+      - name: Populate Database
+        run: sudo -u postgres psql -c 'create database watchdog;'
       - name: Build with Maven
         run: mvn -B package --file pom.xml
