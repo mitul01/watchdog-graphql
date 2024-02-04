@@ -1,0 +1,40 @@
+# Models
+type User {
+    userId: ID!
+    userName: String!
+    firstName: String!
+    lastName: String!
+    installedBots: [Bot!]!
+}
+
+type Bot {
+    botId: ID!
+    name: String!
+    users: [User!]
+}
+
+# DTO
+input BotInput {
+    name: String!
+}
+
+input UserInput {
+    userName: String!
+    firstName: String!
+    lastName: String!
+    botId: ID!
+}
+
+# UseCases
+type Query {
+    users: [User]!
+    bots: [Bot]!
+}
+
+type Mutation {
+    createBot(bot: BotInput): Bot!
+    updateBot(botId: ID, bot: BotInput): Bot!
+    deleteBot(botId: ID): Boolean!
+
+    createUser(user: UserInput): User!
+}

@@ -1,14 +1,23 @@
 package com.watchdog.watchdog.model;
 
-import com.sun.istack.NotNull;
+import jakarta.annotation.Nonnull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.persistence.*;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 @Entity
 @Table(name = "account")
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Account {
 
 	@Id
