@@ -1,14 +1,22 @@
 package com.watchdog.watchdog.model;
 
-import com.sun.istack.NotNull;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "user")
+@Table(name = "userbase")
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
 	@Id
 	@GeneratedValue
@@ -16,12 +24,18 @@ public class User {
 	private UUID userId;
 
 	@NotNull
-	private String username;
+	private String userName;
 
-	@NotNull
 	private String firstName;
 
 	private String lastName;
+
+	public User(String userName, String firstName, String lastName, Set<Bot> installedBots) {
+		this.userName = userName;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.installedBots = installedBots;
+	}
 
 	@ManyToMany
 	@JoinTable(
@@ -33,7 +47,7 @@ public class User {
 
 	@ManyToMany
 	@JoinTable(
-			name = "accounts",
+			name = "user_accounts",
 			joinColumns = @JoinColumn(name = "user_id"),
 			inverseJoinColumns = @JoinColumn(name = "account_id")
 	)
