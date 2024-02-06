@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -30,6 +31,26 @@ public class UserService {
         User user = new User(userInput.userName(),userInput.firstName(),userInput.lastName(),installedBots);
         userRepository.save(user);
         return user;
+    }
+
+    public User updateUser(UUID userId, UserInputDTO userInput){
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("No such user exists"));
+        if (userInput.userName()  != null) user.setUserName(userInput.userName());
+        if (userInput.firstName()  != null) user.setFirstName(userInput.firstName());
+        if (userInput.lastName()  != null) user.setLastName(userInput.lastName());
+        if (userInput.botId()  != null) {
+            Set<Bot> installedBots = user.getInstalledBots();
+            installedBots.add(botRepository.findById(userInput.botId()).orElseThrow(() -> new EntityNotFoundException("No such bot exists")));
+            user.setInstalledBots(installedBots);
+        }
+        userRepository.save(user);
+        return user;
+    }
+
+    public Boolean deleteUser(UUID userId){
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("No such bot exists"));
+        userRepository.delete(user);
+        return true;
     }
 
 }

@@ -15,19 +15,20 @@ type Bot {
 
 # DTO
 input BotInput {
-    name: String!
+    name: String
 }
 
 input UserInput {
-    userName: String!
-    firstName: String!
-    lastName: String!
-    botId: ID!
+    userName: String
+    firstName: String
+    lastName: String
+    botId: ID
 }
 
 # UseCases
 type Query {
     users: [User]!
+    getUserById(userId: ID): [User!]
     bots: [Bot]!
 }
 
@@ -37,4 +38,6 @@ type Mutation {
     deleteBot(botId: ID): Boolean!
 
     createUser(user: UserInput): User!
+    updateUser(userId: ID,user: UserInput): User!
+    deleteUser(userId: ID): Boolean!
 }

@@ -4,9 +4,12 @@ import com.watchdog.watchdog.dto.UserInputDTO;
 import com.watchdog.watchdog.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.Arguments;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
+
+import java.util.UUID;
 
 @Controller
 public class UserController implements UseCases {
@@ -22,6 +25,16 @@ public class UserController implements UseCases {
     @MutationMapping
     public User createUser(@Argument UserInputDTO user){
         return userService.createUser(user);
+    }
+
+    @MutationMapping
+    public User updateUser(@Argument UUID userId,@Argument UserInputDTO user){
+        return userService.updateUser(userId,user);
+    }
+
+    @MutationMapping
+    public Boolean deleteUser(@Argument UUID userId){
+        return userService.deleteUser(userId);
     }
 
 }
