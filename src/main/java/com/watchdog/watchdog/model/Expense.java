@@ -24,6 +24,13 @@ public class Expense {
 	@NotNull
 	private String name;
 
+	public Expense(String name, Float amount, Account account, User paidBy) {
+		this.name = name;
+		this.amount = amount;
+		this.account = account;
+		this.paidBy = paidBy;
+	}
+
 	@NotNull
 	private Float amount;
 
