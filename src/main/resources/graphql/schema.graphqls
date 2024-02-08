@@ -5,7 +5,8 @@ type User {
     firstName: String!
     lastName: String!
     installedBots: [Bot!]!
-    accounts: [Account]
+    accounts: [Account!]
+    expenses: [Expense]
 }
 
 type Bot {
@@ -18,6 +19,15 @@ type Account {
     accountId: ID!
     name: String!
     users: [User!]
+    expenses: [Expense]
+}
+
+type Expense {
+    id: ID!
+    name: String!
+    amount: Float!
+    account: Account!
+    paidBy: User!
 }
 
 # DTO
@@ -37,11 +47,19 @@ input AccountInput {
     userIds: [ID]
 }
 
+input ExpenseInput {
+    name: String
+    amount: Float
+    accountId: ID
+    paidByUserId: ID
+}
+
 # UseCases
 type Query {
     users: [User]!
     bots: [Bot]!
     accounts: [Account]!
+    expenses: [Expense]!
 }
 
 type Mutation {
@@ -56,4 +74,8 @@ type Mutation {
     createAccount(account: AccountInput): Account!
     updateAccount(accountId: ID,account: AccountInput): Account!
     deleteAccount(accountId: ID): Boolean!
+
+    createExpense(expense: ExpenseInput): Expense!
+    updateExpense(expenseId: ID,expense: ExpenseInput): Expense!
+    deleteExpense(expenseId: ID): Boolean!
 }
