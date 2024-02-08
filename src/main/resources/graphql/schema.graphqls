@@ -5,10 +5,17 @@ type User {
     firstName: String!
     lastName: String!
     installedBots: [Bot!]!
+    accounts: [Account]
 }
 
 type Bot {
     botId: ID!
+    name: String!
+    users: [User!]
+}
+
+type Account {
+    accountId: ID!
     name: String!
     users: [User!]
 }
@@ -25,11 +32,16 @@ input UserInput {
     botId: ID
 }
 
+input AccountInput {
+    name: String
+    userIds: [ID]
+}
+
 # UseCases
 type Query {
     users: [User]!
-    getUserById(userId: ID): [User!]
     bots: [Bot]!
+    accounts: [Account]!
 }
 
 type Mutation {
@@ -40,4 +52,8 @@ type Mutation {
     createUser(user: UserInput): User!
     updateUser(userId: ID,user: UserInput): User!
     deleteUser(userId: ID): Boolean!
+
+    createAccount(account: AccountInput): Account!
+    updateAccount(accountId: ID,account: AccountInput): Account!
+    deleteAccount(accountId: ID): Boolean!
 }

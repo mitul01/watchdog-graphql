@@ -45,15 +45,10 @@ public class User {
 	)
 	private Set<Bot> installedBots;
 
-	@ManyToMany
-	@JoinTable(
-			name = "user_accounts",
-			joinColumns = @JoinColumn(name = "user_id"),
-			inverseJoinColumns = @JoinColumn(name = "account_id")
-	)
+	@ManyToMany(mappedBy = "users")
 	private Set<Account> accounts;
 
 
-	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = false)
+	@OneToMany(mappedBy = "paidBy", fetch = FetchType.LAZY, orphanRemoval = false)
 	private List<Expense> expenses;
 }

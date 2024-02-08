@@ -1,5 +1,7 @@
 package com.watchdog.watchdog.user;
 
+import com.watchdog.watchdog.account.AccountRepository;
+import com.watchdog.watchdog.account.AccountService;
 import com.watchdog.watchdog.bot.BotRepository;
 import com.watchdog.watchdog.dto.UserInputDTO;
 import com.watchdog.watchdog.model.Bot;
@@ -21,6 +23,9 @@ public class UserService {
     @Autowired
     private BotRepository botRepository;
 
+    @Autowired
+    private AccountService accountService;
+
     public Iterable<User> getUsers(){
         return userRepository.findAll();
     }
@@ -30,6 +35,7 @@ public class UserService {
         installedBots.add(botRepository.findById(userInput.botId()).orElseThrow(() -> new EntityNotFoundException("No such bot exists")));
         User user = new User(userInput.userName(),userInput.firstName(),userInput.lastName(),installedBots);
         userRepository.save(user);
+        accountService.createDefaultAccount(user);
         return user;
     }
 
