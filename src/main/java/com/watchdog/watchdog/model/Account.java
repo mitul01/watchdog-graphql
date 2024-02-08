@@ -28,8 +28,19 @@ public class Account {
 	@NotNull
 	private String name;
 
-	@ManyToMany(mappedBy = "accounts")
+	@ManyToMany
+	@JoinTable(
+			name = "user_accounts",
+			joinColumns = @JoinColumn(name = "account_id"),
+			inverseJoinColumns = @JoinColumn(name = "user_id")
+	)
 	private Set<User> users;
+
+
+	public Account(String name, Set<User> users) {
+		this.name = name;
+		this.users = users;
+	}
 
 	@OneToMany(mappedBy = "account", fetch = FetchType.LAZY, orphanRemoval = false)
 	private List<Expense> expenses;
