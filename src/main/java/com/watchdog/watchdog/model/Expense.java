@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -41,4 +42,7 @@ public class Expense {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "userbase.userId")
 	private User paidBy;
+
+	@OneToMany(mappedBy = "expense", fetch = FetchType.LAZY, orphanRemoval = true)
+	private List<ExpenseSplit> expenseSplit;
 }
