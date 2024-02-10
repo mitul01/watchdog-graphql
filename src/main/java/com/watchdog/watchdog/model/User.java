@@ -50,5 +50,8 @@ public class User {
 
 
 	@OneToMany(mappedBy = "paidBy", fetch = FetchType.LAZY, orphanRemoval = false)
-	private List<Expense> expenses;
+	private List<Expense> totalExpensesPaid;
+
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = false)
+	private List<ExpenseSplit> ownExpenses;
 }

@@ -6,7 +6,8 @@ type User {
     lastName: String!
     installedBots: [Bot!]!
     accounts: [Account!]
-    expenses: [Expense]
+    totalExpensesPaid: [Expense]
+    ownExpenses: [ExpenseSplit]
 }
 
 type Bot {
@@ -28,6 +29,15 @@ type Expense {
     amount: Float!
     account: Account!
     paidBy: User!
+    expenseSplit: [ExpenseSplit!]
+}
+
+type ExpenseSplit {
+    id: ID!
+    amount: Float!
+    name: String!
+    expense: Expense!
+    user: User!
 }
 
 # DTO
@@ -52,6 +62,12 @@ input ExpenseInput {
     amount: Float
     accountId: ID
     paidByUserId: ID
+    expenseSplit: [ExpenseSplitInput]
+}
+
+input ExpenseSplitInput {
+    amount: Float!
+    userId: ID!
 }
 
 # UseCases
