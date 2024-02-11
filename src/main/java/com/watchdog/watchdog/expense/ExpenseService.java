@@ -1,8 +1,10 @@
 package com.watchdog.watchdog.expense;
 
 import com.watchdog.watchdog.account.AccountRepository;
+import com.watchdog.watchdog.dto.Constants;
 import com.watchdog.watchdog.dto.ExpenseInputDTO;
 import com.watchdog.watchdog.dto.ExpenseSplitInputDTO;
+import com.watchdog.watchdog.exception.ExpenseSplitRequiredException;
 import com.watchdog.watchdog.model.Account;
 import com.watchdog.watchdog.model.Expense;
 import com.watchdog.watchdog.model.ExpenseSplit;
@@ -36,7 +38,7 @@ public class ExpenseService {
     }
 
     public Expense createExpense(ExpenseInputDTO expenseInput) {
-        Account account = accountRepository.findById(expenseInput.accountId()).orElseThrow(() -> new EntityNotFoundException("No such account exists"));
+        Account account = accountRepository.findById(expenseInput.accountId()).orElseThrow(() -> new EntityNotFoundException(Constants.entityNotFoundErrorMsg.formatted("account")));
         User paidByUser = null;
         for(User user: account.getUsers()){
             if(user.getUserId().equals(expenseInput.paidByUserId())){
@@ -45,7 +47,7 @@ public class ExpenseService {
             }
         }
         if(paidByUser == null){
-            // TODO - Throw exception - user does exist in the selected account
+            throw new EntityNotFoundException(Constants.userNotFoundInAccountErrorMsg);
         }
         Expense expense = new Expense(expenseInput.name(),expenseInput.amount(),account,paidByUser);
 
@@ -55,21 +57,19 @@ public class ExpenseService {
         if(expense.getAccount().getUsers().size() > 1) {
             if(expenseInput.expenseSplit() != null) {
                 for (ExpenseSplitInputDTO expenseSplitInput : expenseInput.expenseSplit()) {
-                    User user = userRepository.findById(expenseSplitInput.userId()).orElseThrow(() -> new EntityNotFoundException("No such user exists"));
+                    User user = userRepository.findById(expenseSplitInput.userId()).orElseThrow(() -> new EntityNotFoundException(Constants.entityNotFoundErrorMsg.formatted("user")));
                     ExpenseSplit expenseSplit = new ExpenseSplit(expense, user, expenseSplitInput.amount(), expense.getName());
                     expenseSplitList.add(expenseSplit);
                     totalSplitSum += expenseSplit.getAmount();
                 }
-                assert totalSplitSum.equals(expense.getAmount()) : new AssertionError("Split Expenses sum does not match total expense sum");
+                assert totalSplitSum.equals(expense.getAmount()) : new AssertionError(Constants.expenseSplitSumNotMatchErrorMsg);
                 expenseRepository.save(expense);
                 expenseSplitRepository.saveAll(expenseSplitList);
             } else {
-                // TODO - Raise exception of split required
+               throw new ExpenseSplitRequiredException(Constants.expenseSplitRequiredErrorMsg);
             }
         } else {
-            ExpenseSplit expenseSplit = new ExpenseSplit(expense, paidByUser, expense.getAmount(), expense.getName());
             expenseRepository.save(expense);
-            expenseSplitRepository.save(expenseSplit);
         }
 
         return expense;
@@ -77,7 +77,7 @@ public class ExpenseService {
     }
 
     public Expense updateExpense(UUID expenseId, ExpenseInputDTO expenseInput){
-        Expense expense = expenseRepository.findById(expenseId).orElseThrow(() -> new EntityNotFoundException("No such expense exists"));
+        Expense expense = expenseRepository.findById(expenseId).orElseThrow(() -> new EntityNotFoundException(Constants.entityNotFoundErrorMsg.formatted("expense")));
         if (expenseInput.name()  != null) expense.setName(expenseInput.name());
         if (expenseInput.amount()  != null) expense.setAmount(expenseInput.amount());
         if (expenseInput.paidByUserId()  != null) {
@@ -91,7 +91,7 @@ public class ExpenseService {
             if(paidByUser != null){
                 expense.setPaidBy(paidByUser);
             } else {
-                // TODO - Throw exception - user does exist in the selected account
+                throw new EntityNotFoundException(Constants.userNotFoundInAccountErrorMsg);
             }
         }
         expenseRepository.save(expense);
@@ -101,7 +101,7 @@ public class ExpenseService {
         Float totalSplitSum = 0.0f;
         if(expenseInput.expenseSplit() != null) {
             for (ExpenseSplitInputDTO expenseSplitInput : expenseInput.expenseSplit()) {
-                User user = userRepository.findById(expenseSplitInput.userId()).orElseThrow(() -> new EntityNotFoundException("No such user exists"));
+                User user = userRepository.findById(expenseSplitInput.userId()).orElseThrow(() -> new EntityNotFoundException(Constants.entityNotFoundErrorMsg.formatted("user")));
                 ExpenseSplit expenseSplit = expenseSplitRepository.findExpenseSplitByExpenseAndUser(expense, user);
                 if (expenseSplit != null) {
                     expenseSplit.setAmount(expenseSplitInput.amount());
@@ -112,14 +112,14 @@ public class ExpenseService {
                 totalSplitSum += expenseSplit.getAmount();
             }
         }
-        assert totalSplitSum.equals(expense.getAmount()) : new AssertionError("Split Expenses sum does not match total expense sum");
+        assert totalSplitSum.equals(expense.getAmount()) : new AssertionError(Constants.expenseSplitSumNotMatchErrorMsg);
         expenseSplitRepository.saveAll(expenseSplitList);
 
         return expense;
     }
 
     public Boolean deleteExpense(UUID expenseId){
-        Expense expense = expenseRepository.findById(expenseId).orElseThrow(() -> new EntityNotFoundException("No such expense exists"));
+        Expense expense = expenseRepository.findById(expenseId).orElseThrow(() -> new EntityNotFoundException(Constants.entityNotFoundErrorMsg.formatted("expense")));
         expenseRepository.delete(expense);
         return true;
     }
