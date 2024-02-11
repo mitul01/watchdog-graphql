@@ -1,8 +1,8 @@
 package com.watchdog.watchdog.user;
 
-import com.watchdog.watchdog.account.AccountRepository;
 import com.watchdog.watchdog.account.AccountService;
 import com.watchdog.watchdog.bot.BotRepository;
+import com.watchdog.watchdog.dto.Constants;
 import com.watchdog.watchdog.dto.UserInputDTO;
 import com.watchdog.watchdog.model.Bot;
 import com.watchdog.watchdog.model.User;
@@ -32,7 +32,7 @@ public class UserService {
 
     public User createUser(UserInputDTO userInput){
         Set<Bot> installedBots = new HashSet<>();
-        installedBots.add(botRepository.findById(userInput.botId()).orElseThrow(() -> new EntityNotFoundException("No such bot exists")));
+        installedBots.add(botRepository.findById(userInput.botId()).orElseThrow(() -> new EntityNotFoundException(Constants.entityNotFoundErrorMsg.formatted("user"))));
         User user = new User(userInput.userName(),userInput.firstName(),userInput.lastName(),installedBots);
         userRepository.save(user);
         accountService.createDefaultAccount(user);
@@ -40,13 +40,13 @@ public class UserService {
     }
 
     public User updateUser(UUID userId, UserInputDTO userInput){
-        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("No such user exists"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(Constants.entityNotFoundErrorMsg.formatted("user")));
         if (userInput.userName()  != null) user.setUserName(userInput.userName());
         if (userInput.firstName()  != null) user.setFirstName(userInput.firstName());
         if (userInput.lastName()  != null) user.setLastName(userInput.lastName());
         if (userInput.botId()  != null) {
             Set<Bot> installedBots = user.getInstalledBots();
-            installedBots.add(botRepository.findById(userInput.botId()).orElseThrow(() -> new EntityNotFoundException("No such bot exists")));
+            installedBots.add(botRepository.findById(userInput.botId()).orElseThrow(() -> new EntityNotFoundException(Constants.entityNotFoundErrorMsg.formatted("bot"))));
             user.setInstalledBots(installedBots);
         }
         userRepository.save(user);
@@ -54,7 +54,7 @@ public class UserService {
     }
 
     public Boolean deleteUser(UUID userId){
-        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("No such bot exists"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(Constants.entityNotFoundErrorMsg.formatted("bot")));
         userRepository.delete(user);
         return true;
     }
