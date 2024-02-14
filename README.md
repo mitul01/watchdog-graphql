@@ -18,8 +18,8 @@ Watchdog GraphQL is a backend server to serve requests from clients. It is built
 ### Developer Local Setup Guide
 
 1. Setup local Postgres Server & create a new database called watchdog using - ```createdb watchdog;```
-2. Build Code (Java JAR file) - ```mvn clean install -DpgHost=<db-host> -DpgUser=<db-user> -DpgDBName=<db-name> -DpgPassword=<db-password>```
-3. Run Spring Service - ```mvn spring-boot:run -DpgHost=<db-host> -DpgUser=<db-user> -DpgDBName=watchdog -DpgPassword=<db-password>```
+2. Build Code (Java JAR file) - ```mvn clean install -DPOSTGRES_HOST=<db-host> -DPOSTGRES_USER=<db-user> -DPOSTGRES_DB=<db-name> -DPOSTGRES_PASSWORD=<db-password>```
+3. Run Spring Service - ```mvn spring-boot:run -DPOSTGRES_HOST=<db-host> -DPOSTGRES_USER=<db-user> -DPOSTGRES_DB=<db-name> -DPOSTGRES_PASSWORD=<db-password>```
 4. Graphiql page (Interactive Graphql Page) - `http:localhost:8080/graphiql?path=/graphql`
 
 ### Iterate Flow
