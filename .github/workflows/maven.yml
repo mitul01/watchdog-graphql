@@ -50,4 +50,4 @@ jobs:
           sudo apt-get install --yes --no-install-recommends postgresql-client
           export PGPASSWORD='postgres';
           psql -h localhost -U postgres -c 'CREATE DATABASE watchdog'
-          mvn -B package --file pom.xml
+          mvn -B package --file pom.xml -DPOSTGRES_HOST=localhost -DPOSTGRES_USER=postgres -DPOSTGRES_DB=watchdog -DPOSTGRES_PASSWORD=postgres
