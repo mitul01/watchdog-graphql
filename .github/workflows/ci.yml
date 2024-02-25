@@ -1,4 +1,4 @@
-name: CI
+name: CI (Build & Publish)
 
 on:
   push:
@@ -13,7 +13,10 @@ env:
   BUILDER: paketobuildpacks/builder-jammy-tiny
   
 jobs:
-  build:
+  maven-build-test:
+    uses: ./.github/workflows/maven.yml
+
+  build-publish:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,13 +29,13 @@ jobs:
     - name: Extract Git Metadata
       shell: bash
       run: |
-        echo "sha_short=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
-        echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >> "$GITHUB_ENV"
+        echo "SHA_TAG=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
+        echo "BRANCH=$(echo ${GITHUB_REF#refs/heads/})" >> "$GITHUB_ENV"
 
     - name: Build Image using Pack CLI
       run: |
         #!/usr/bin/env bash
-        pack build ${{env.IMAGE_NAME}}:${{env.sha_short}} --path . --builder ${{env.BUILDER}}
+        pack build ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}} --path . --builder ${{env.BUILDER}}
 
     - name: Log into registry ${{ env.REGISTRY }}
       uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
@@ -43,12 +46,12 @@ jobs:
         
     - name: Publish Image
       run: |
-        docker push ghcr.io/${{env.IMAGE_NAME}}:${{env.sha_short}}
-
-#    - name: Repository Dispatch
-#     uses: peter-evans/repository-dispatch@v1
-#      with:
-#        token: ${{ secrets.PAT }}
-#        repository: ${{ github.actor }}/argocd-node-app-config
-#        event-type: new-image
-#        client-payload: '{"image": "${{ github.actor }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}"}'
+        docker push ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}
+  
+  #    - name: Repository Dispatch
+  #     uses: peter-evans/repository-dispatch@v1
+  #      with:
+  #        token: ${{ secrets.PAT }}
+  #        repository: ${{ github.actor }}/argocd-node-app-config
+  #        event-type: new-image
+  #        client-payload: '{"image": "${{ github.actor }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}"}'
