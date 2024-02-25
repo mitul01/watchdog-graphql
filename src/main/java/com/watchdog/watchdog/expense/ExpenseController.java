@@ -2,6 +2,7 @@ package com.watchdog.watchdog.expense;
 
 import com.watchdog.watchdog.dto.Constants;
 import com.watchdog.watchdog.dto.ExpenseInputDTO;
+import com.watchdog.watchdog.dto.ExpenseOwedDTO;
 import com.watchdog.watchdog.model.Expense;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,12 @@ public class ExpenseController implements UseCases {
     public Iterable<Expense> expenses() {
         logger.info(Constants.getRequestInfoLogMsg.formatted("expense"));
         return expenseService.getExpenses();
+    }
+
+    @QueryMapping
+    public Iterable<ExpenseOwedDTO> expenseOwed(@Argument UUID accountId, @Argument UUID userId) {
+        logger.info(Constants.getRequestInfoLogMsg.formatted("expense owed data"));
+        return expenseService.expenseOwed(accountId,userId);
     }
 
     @MutationMapping

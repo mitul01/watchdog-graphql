@@ -11,4 +11,5 @@ import java.util.UUID;
 @Repository
 public interface ExpenseSplitRepository extends JpaRepository<ExpenseSplit, UUID> {
     ExpenseSplit findExpenseSplitByExpenseAndUser(Expense expense, User user);
+    Iterable<ExpenseSplit> findAllExpenseSplitByExpense_Account_AccountIdAndExpense_PaidBy_UserIdAndUser_UserId(UUID accountId, UUID paidByUserId, UUID userId);
 }

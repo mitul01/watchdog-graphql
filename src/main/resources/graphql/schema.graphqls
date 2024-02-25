@@ -40,6 +40,11 @@ type ExpenseSplit {
     user: User!
 }
 
+type ExpenseOwed {
+    user: User!
+    owedAmount: Float!
+}
+
 # DTO
 input BotInput {
     name: String
@@ -76,6 +81,7 @@ type Query {
     bots: [Bot]!
     accounts: [Account]!
     expenses: [Expense]!
+    expenseOwed(accountId: ID, userId: ID): [ExpenseOwed]
 }
 
 type Mutation {
