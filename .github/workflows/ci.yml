@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - 'main'
+
+env:
+  REGISTRY: ghcr.io
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: ${{ github.repository }}
+  # buildpack builder
+  BUILDER: paketobuildpacks/builder-jammy-tiny
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Setup Pack CLI
+      uses: buildpacks/github-actions/setup-pack@v5.0.0
+  
+    - name: Extract Git Metadata
+      shell: bash
+      run: |
+        echo "sha_short=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
+        echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >> "$GITHUB_ENV"
+
+    - name: Build Image using Pack CLI
+      run: |
+        #!/usr/bin/env bash
+        pack build ${{env.IMAGE_NAME}}:${{env.sha_short}} --path . --builder ${{env.BUILDER}}
+
+    - name: Log into registry ${{ env.REGISTRY }}
+      uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Publish Image
+      run: |
+        docker push ghcr.io/${{env.IMAGE_NAME}}:${{env.sha_short}}
+
+#    - name: Repository Dispatch
+#     uses: peter-evans/repository-dispatch@v1
+#      with:
+#        token: ${{ secrets.PAT }}
+#        repository: ${{ github.actor }}/argocd-node-app-config
+#        event-type: new-image
+#        client-payload: '{"image": "${{ github.actor }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}"}'
