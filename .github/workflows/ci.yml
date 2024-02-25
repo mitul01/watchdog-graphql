@@ -17,7 +17,11 @@ jobs:
     uses: ./.github/workflows/maven.yml
 
   build-publish:
+    needs: maven-build-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
     - name: Checkout repository
