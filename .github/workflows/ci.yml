@@ -13,7 +13,10 @@ env:
   BUILDER: paketobuildpacks/builder-jammy-tiny
   
 jobs:
-  build:
+  maven-build-test:
+    uses: ./.github/workflows/maven.yml
+
+  build-publish:
     runs-on: ubuntu-latest
 
     steps:
@@ -44,11 +47,11 @@ jobs:
     - name: Publish Image
       run: |
         docker push ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}
-
-#    - name: Repository Dispatch
-#     uses: peter-evans/repository-dispatch@v1
-#      with:
-#        token: ${{ secrets.PAT }}
-#        repository: ${{ github.actor }}/argocd-node-app-config
-#        event-type: new-image
-#        client-payload: '{"image": "${{ github.actor }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}"}'
+  
+  #    - name: Repository Dispatch
+  #     uses: peter-evans/repository-dispatch@v1
+  #      with:
+  #        token: ${{ secrets.PAT }}
+  #        repository: ${{ github.actor }}/argocd-node-app-config
+  #        event-type: new-image
+  #        client-payload: '{"image": "${{ github.actor }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}"}'
