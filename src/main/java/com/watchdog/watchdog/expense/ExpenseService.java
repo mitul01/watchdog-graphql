@@ -3,6 +3,7 @@ package com.watchdog.watchdog.expense;
 import com.watchdog.watchdog.account.AccountRepository;
 import com.watchdog.watchdog.dto.Constants;
 import com.watchdog.watchdog.dto.ExpenseInputDTO;
+import com.watchdog.watchdog.dto.ExpenseOwedDTO;
 import com.watchdog.watchdog.dto.ExpenseSplitInputDTO;
 import com.watchdog.watchdog.exception.ExpenseSplitRequiredException;
 import com.watchdog.watchdog.model.Account;
@@ -15,8 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ExpenseService {
@@ -122,5 +125,33 @@ public class ExpenseService {
         Expense expense = expenseRepository.findById(expenseId).orElseThrow(() -> new EntityNotFoundException(Constants.entityNotFoundErrorMsg.formatted("expense")));
         expenseRepository.delete(expense);
         return true;
+    }
+
+    public Float getTotalOwedAmount(UUID accountId, UUID userId1, UUID userId2){
+        Float totalAmt = 0.0f;
+        for (ExpenseSplit expense: expenseSplitRepository.findAllExpenseSplitByExpense_Account_AccountIdAndExpense_PaidBy_UserIdAndUser_UserId(accountId,userId1,userId2)){
+            totalAmt += expense.getAmount();
+        }
+        return totalAmt;
+    }
+
+    public Iterable<ExpenseOwedDTO> expenseOwed(UUID accountId, UUID userId){
+        Iterable<Expense> expenses = expenseRepository.findAllByAccount_AccountIdAndPaidBy_UserId(accountId,userId);
+        HashMap<UUID,ExpenseOwedDTO> expensesOwed = new HashMap<>();
+        for(Expense expense: expenses){
+            for(ExpenseSplit expenseSplit: expense.getExpenseSplit()){
+                if(!expenseSplit.getUser().getUserId().equals(userId)) {
+                    if(expensesOwed.get(expenseSplit.getUser().getUserId()) != null){
+                        expensesOwed.put(expenseSplit.getUser().getUserId(),new ExpenseOwedDTO(expenseSplit.getUser(),expensesOwed.get(expenseSplit.getUser().getUserId()).owedAmount() + expenseSplit.getAmount()));
+                    } else {
+                        expensesOwed.put(expenseSplit.getUser().getUserId(),new ExpenseOwedDTO(expenseSplit.getUser(),expenseSplit.getAmount()));
+                    }
+                }
+            }
+        }
+        for(ExpenseOwedDTO expenseOwed: expensesOwed.values()){
+            expensesOwed.put(expenseOwed.user().getUserId(),new ExpenseOwedDTO(expenseOwed.user(),getTotalOwedAmount(accountId,expenseOwed.user().getUserId(),userId) - expenseOwed.owedAmount()));
+        }
+        return new ArrayList<>(expensesOwed.values());
     }
 }

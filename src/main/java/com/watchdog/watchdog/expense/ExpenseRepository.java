@@ -8,4 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface ExpenseRepository extends JpaRepository<Expense, UUID> {
+    Iterable<Expense> findAllByAccount_AccountIdAndPaidBy_UserId(UUID accountId, UUID userId);
 }
