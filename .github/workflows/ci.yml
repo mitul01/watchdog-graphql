@@ -50,6 +50,7 @@ jobs:
         
     - name: Publish Image
       run: |
+        docker tag ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}} ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:latest
         docker push ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}
     
     - name: Repository Dispatch to watchdog-config
