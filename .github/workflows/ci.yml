@@ -50,12 +50,12 @@ jobs:
         
     - name: Publish Image
       run: |
+        docker tag ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}} ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:latest
         docker push ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}
-  
-  #    - name: Repository Dispatch
-  #     uses: peter-evans/repository-dispatch@v1
-  #      with:
-  #        token: ${{ secrets.PAT }}
-  #        repository: ${{ github.actor }}/argocd-node-app-config
-  #        event-type: new-image
-  #        client-payload: '{"image": "${{ github.actor }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}"}'
+    
+    - name: Repository Dispatch to watchdog-config
+      uses: peter-evans/repository-dispatch@v3
+      with:
+        repository: ${{ github.actor }}/watchdog-config
+        event-type: publish-pkg
+        client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ env.SHA_TAG }}", "app_name": "watchdog-graphql", "image": "${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}", "version": "0.0.1" }'
