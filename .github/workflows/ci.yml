@@ -56,6 +56,7 @@ jobs:
     - name: Repository Dispatch to watchdog-config
       uses: peter-evans/repository-dispatch@v3
       with:
+        token: ${{ secrets.WATCHDOG_CONFIG_REPO_TOKEN }}
         repository: ${{ github.actor }}/watchdog-config
         event-type: publish-pkg
         client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ env.SHA_TAG }}", "app_name": "watchdog-graphql", "image": "${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}", "version": "0.0.1" }'
