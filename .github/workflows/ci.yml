@@ -37,8 +37,8 @@ jobs:
         git config --global user.name 'DevOpsBot'
         git config --global user.email 'devops-bot@users.noreply.github.com'
         git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-        echo "RELEASE_VERSION_TAG=$(git describe --tags --match "v*")" >> "$GITHUB_ENV"
-        echo "RELEASE_VERSION=$(( echo "${{env.RELEASE_VERSION_TAG}}" | sed 's/^v//' ))" >> "$GITHUB_ENV"
+        echo "RELEASE_VERSION_TAG=$(git describe --tags --match "v*" HEAD^)" >> "$GITHUB_ENV"
+        echo "RELEASE_VERSION=$(echo "${{env.RELEASE_VERSION_TAG}}" | sed 's/^v//')" >> "$GITHUB_ENV"
         echo "NEW_RELEASE_VERSION=${{env.RELEASE_VERSION}} + 0.0.1" >> "GITHUB_ENV"
         echo Updating version from ${{env.RELEASE_VERSION}} to ${{env.NEW_RELEASE_VERSION}}
         git tag v${{env.NEW_RELEASE_VERSION}}
