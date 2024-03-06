@@ -34,6 +34,7 @@ jobs:
       id: version
       shell: bash
       run: |
+        git fetch --prune --unshallow --tags
         git config --global user.name 'DevOpsBot'
         git config --global user.email 'devops-bot@users.noreply.github.com'
         git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
