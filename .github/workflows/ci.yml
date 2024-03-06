@@ -39,8 +39,8 @@ jobs:
         echo "RELEASE_VERSION_TAG=$(git describe --tags --match "v*")" >> "$GITHUB_ENV"
         echo "RELEASE_VERSION=$(( echo "${{env.RELEASE_VERSION_TAG}}" | sed 's/^v//' ))" >> "$GITHUB_ENV"
         echo "NEW_RELEASE_VERSION=${{env.RELEASE_VERSION}} + 0.0.1" >> "GITHUB_OUTPUT"
-        git tag v${{NEW_RELEASE_VERSION}}
-        git push origin v${{env.NEW_RELEASE_VERSION}}
+        git tag v${NEW_RELEASE_VERSION}
+        git push origin v${NEW_RELEASE_VERSION}
     
 
   build-publish:
