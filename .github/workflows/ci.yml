@@ -23,8 +23,6 @@ jobs:
   create-new-version:
     needs: maven-build-test
     runs-on: ubuntu-latest
-    outputs:
-      NEW_RELEASE_VERSION: ${{ steps.version.outputs.NEW_RELEASE_VERSION }}
     permissions:
       contents: write
 
@@ -36,11 +34,15 @@ jobs:
       id: version
       shell: bash
       run: |
+        git config --global user.name 'DevOpsBot'
+        git config --global user.email 'devops-bot@users.noreply.github.com'
+        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
         echo "RELEASE_VERSION_TAG=$(git describe --tags --match "v*")" >> "$GITHUB_ENV"
         echo "RELEASE_VERSION=$(( echo "${{env.RELEASE_VERSION_TAG}}" | sed 's/^v//' ))" >> "$GITHUB_ENV"
-        echo "NEW_RELEASE_VERSION=${{env.RELEASE_VERSION}} + 0.0.1" >> "GITHUB_OUTPUT"
-        git tag v${NEW_RELEASE_VERSION}
-        git push origin v${NEW_RELEASE_VERSION}
+        echo "NEW_RELEASE_VERSION=${{env.RELEASE_VERSION}} + 0.0.1" >> "GITHUB_ENV"
+        echo Updating version from ${{env.RELEASE_VERSION}} to ${{env.NEW_RELEASE_VERSION}}
+        git tag v${{env.NEW_RELEASE_VERSION}}
+        git push origin v${{env.NEW_RELEASE_VERSION}}
     
 
   build-publish:
@@ -85,4 +87,4 @@ jobs:
         token: ${{ secrets.WATCHDOG_CONFIG_REPO_TOKEN }}
         repository: ${{ github.actor }}/watchdog-config
         event-type: publish-pkg
-        client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ env.SHA_TAG }}", "app_name": "watchdog-graphql", "image": "${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}", "version": ${{needs.create-new-version.outputs.NEW_RELEASE_VERSION}}, "version_type": ${{env.VERSION_TYPE}} }'
+        client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ env.SHA_TAG }}", "app_name": "watchdog-graphql", "image": "${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}", "version": ${{env.NEW_RELEASE_VERSION}}, "version_type": ${{env.VERSION_TYPE}} }'
