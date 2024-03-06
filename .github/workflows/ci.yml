@@ -14,13 +14,34 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   # buildpack builder
   BUILDER: paketobuildpacks/builder-jammy-tiny
+  # version type
+  VERSION_TYPE: PATCH
   
 jobs:
   maven-build-test:
     uses: ./.github/workflows/maven.yml
 
   create-new-version:
-    uses: ./.github/workflows/version.yml
+    runs-on: ubuntu-latest
+    outputs:
+      NEW_RELEASE_VERSION: ${{ steps.version.outputs.NEW_RELEASE_VERSION }}
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Add new version to latest commit
+      id: version
+      shell: bash
+      run: |
+        echo "RELEASE_VERSION_TAG=$(git describe --tags --match "v*")" >> "$GITHUB_ENV"
+        echo "RELEASE_VERSION=$(( echo "${{env.RELEASE_VERSION_TAG}}" | sed 's/^v//' ))" >> "$GITHUB_ENV"
+        echo "NEW_RELEASE_VERSION=${{env.RELEASE_VERSION}} + 0.0.1" >> "GITHUB_OUTPUT"
+        git tag v${{env.NEW_RELEASE_VERSION}}
+        git push origin v${{env.NEW_RELEASE_VERSION}}
+    
 
   build-publish:
     needs: maven-build-test
@@ -41,8 +62,6 @@ jobs:
       run: |
         echo "SHA_TAG=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
         echo "BRANCH=$(echo ${GITHUB_REF#refs/heads/})" >> "$GITHUB_ENV"
-        RELEASE_VERSION_TAG=${GITHUB_REF#refs/*/}
-        echo "RELEASE_VERSION=${RELEASE_VERSION_TAG#v}" >> "$GITHUB_ENV"
 
     - name: Build Image using Pack CLI
       run: |
@@ -66,4 +85,4 @@ jobs:
         token: ${{ secrets.WATCHDOG_CONFIG_REPO_TOKEN }}
         repository: ${{ github.actor }}/watchdog-config
         event-type: publish-pkg
-        client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ env.SHA_TAG }}", "app_name": "watchdog-graphql", "image": "${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}", "version": ${{env.RELEASE_VERSION}}, "version_type": "PATCH" }'
+        client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ env.SHA_TAG }}", "app_name": "watchdog-graphql", "image": "${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}", "version": ${{needs.create-new-version.outputs.NEW_RELEASE_VERSION}}, "version_type": ${{env.VERSION_TYPE}} }'
