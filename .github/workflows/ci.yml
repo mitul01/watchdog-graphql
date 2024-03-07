@@ -89,4 +89,4 @@ jobs:
         token: ${{ secrets.WATCHDOG_CONFIG_REPO_TOKEN }}
         repository: ${{ github.actor }}/watchdog-config
         event-type: publish-pkg
-        client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ env.SHA_TAG }}", "app_name": "watchdog-graphql", "image": "${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}", "version": ${{env.NEW_RELEASE_VERSION}}, "version_type": ${{env.VERSION_TYPE}} }'
+        client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ env.SHA_TAG }}", "app_name": "watchdog-graphql", "image": "${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}", "version": "${{env.NEW_RELEASE_VERSION}}", "version_type": "${{env.VERSION_TYPE}}" }'
