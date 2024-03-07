@@ -87,8 +87,7 @@ jobs:
         
     - name: Tag & Publish Image
       run: |
-        container_id=$(docker ps -l -q)
-        docker tag $container_id ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{needs.create-new-version.outputs.NEW_RELEASE_VERSION}}
+        docker tag ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}} ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{needs.create-new-version.outputs.NEW_RELEASE_VERSION}}
         docker push ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}
         docker push ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{needs.create-new-version.outputs.NEW_RELEASE_VERSION}}
     
