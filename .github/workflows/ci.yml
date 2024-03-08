@@ -53,7 +53,7 @@ jobs:
         git push origin v${NEW_RELEASE_VERSION}
 
   get-release-version:
-      needs: maven-build-test
+      needs: create-new-version
       runs-on: ubuntu-latest
       outputs:
         RELEASE_TYPE: ${{ steps.version.outputs.RELEASE_VERSION_TYPE }}
