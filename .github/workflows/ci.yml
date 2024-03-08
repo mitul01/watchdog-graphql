@@ -23,7 +23,6 @@ jobs:
     uses: ./.github/workflows/maven.yml  
 
   create-new-version:
-    if: github.event_name == 'push'
     needs: maven-build-test
     runs-on: ubuntu-latest
     permissions:
@@ -37,20 +36,25 @@ jobs:
       id: version
       shell: bash
       run: |
-        git fetch --prune --unshallow --tags
-        git config --global user.name 'DevOpsBot'
-        git config --global user.email 'devops-bot@users.noreply.github.com'
-        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-        RELEASE_VERSION_TAG=$(git describe --tags --match "v*" HEAD^)
-        RELEASE_VERSION=$(echo ${RELEASE_VERSION_TAG} | sed 's/^v//')
-        major=$(echo "$RELEASE_VERSION" | cut -d. -f1)
-        minor=$(echo "$RELEASE_VERSION" | cut -d. -f2)
-        patch=$(echo "$RELEASE_VERSION" | cut -d. -f3)
-        new_patch=$((patch + 1))
-        NEW_RELEASE_VERSION=("$major.$minor.$new_patch")
-        echo Updating version from ${RELEASE_VERSION} to ${NEW_RELEASE_VERSION}
-        git tag v${NEW_RELEASE_VERSION}
-        git push origin v${NEW_RELEASE_VERSION}
+        if [ github.event_name == 'push' ]
+        then
+          git fetch --prune --unshallow --tags
+          git config --global user.name 'DevOpsBot'
+          git config --global user.email 'devops-bot@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          RELEASE_VERSION_TAG=$(git describe --tags --match "v*" HEAD^)
+          RELEASE_VERSION=$(echo ${RELEASE_VERSION_TAG} | sed 's/^v//')
+          major=$(echo "$RELEASE_VERSION" | cut -d. -f1)
+          minor=$(echo "$RELEASE_VERSION" | cut -d. -f2)
+          patch=$(echo "$RELEASE_VERSION" | cut -d. -f3)
+          new_patch=$((patch + 1))
+          NEW_RELEASE_VERSION=("$major.$minor.$new_patch")
+          echo Updating version from ${RELEASE_VERSION} to ${NEW_RELEASE_VERSION}
+          git tag v${NEW_RELEASE_VERSION}
+          git push origin v${NEW_RELEASE_VERSION}
+        else
+          echo "Upgrade release type. Skipping Creation of patch version..."
+        fi
 
   get-release-version:
       needs: create-new-version
