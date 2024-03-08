@@ -6,6 +6,8 @@ on:
       - 'main'
     paths-ignore:
       - 'README.md'
+      - '.github/*'
+      - '.gitignore'
   
   create:
     tags:
@@ -42,7 +44,7 @@ jobs:
           git config --global user.name 'DevOpsBot'
           git config --global user.email 'devops-bot@users.noreply.github.com'
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-          RELEASE_VERSION_TAG=$(git describe --tags --match "v*" HEAD^)
+          RELEASE_VERSION_TAG=$(git describe --tags --abbrev=0 --match "v*")
           RELEASE_VERSION=$(echo ${RELEASE_VERSION_TAG} | sed 's/^v//')
           major=$(echo "$RELEASE_VERSION" | cut -d. -f1)
           minor=$(echo "$RELEASE_VERSION" | cut -d. -f2)
