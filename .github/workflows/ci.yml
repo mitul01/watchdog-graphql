@@ -60,10 +60,14 @@ jobs:
         NEW_RELEASE_VERSION: ${{ steps.version.outputs.NEW_RELEASE_VERSION }}
 
       steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
       - name: Get Version
         id: version
         shell: bash
         run: |
+          git fetch --prune --unshallow --tags
           NEW_RELEASE_VERSION_TAG=$(git describe --tags --match "v*")
           NEW_RELEASE_VERSION=$(echo ${RELEASE_VERSION_TAG} | sed 's/^v//')
           echo "NEW_RELEASE_VERSION=${NEW_RELEASE_VERSION}" >> "$GITHUB_OUTPUT"
@@ -109,9 +113,9 @@ jobs:
         
     - name: Tag & Publish Image
       run: |
-        docker tag ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}} ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{needs.create-new-version.outputs.NEW_RELEASE_VERSION}}
+        docker tag ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}} ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{needs.get-release-version.outputs.NEW_RELEASE_VERSION}}
         docker push ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}
-        docker push ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{needs.create-new-version.outputs.NEW_RELEASE_VERSION}}
+        docker push ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{needs.get-release-version.outputs.NEW_RELEASE_VERSION}}
     
     - name: Repository Dispatch to watchdog-config
       uses: peter-evans/repository-dispatch@v3
