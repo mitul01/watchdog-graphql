@@ -76,7 +76,7 @@ jobs:
     
 
   build-publish:
-    needs: create-new-version
+    needs: get-release-version
     runs-on: ubuntu-latest
     permissions:
       contents: read
