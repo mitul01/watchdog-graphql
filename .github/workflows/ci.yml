@@ -6,6 +6,10 @@ on:
       - 'main'
     paths-ignore:
       - 'README.md'
+  
+  create:
+    tags:
+      - 'v*'
 
 env:
   REGISTRY: ghcr.io
@@ -13,20 +17,17 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   # buildpack builder
   BUILDER: paketobuildpacks/builder-jammy-tiny
-  # version type
-  VERSION_TYPE: PATCH
   
 jobs:
   maven-build-test:
-    uses: ./.github/workflows/maven.yml
+    uses: ./.github/workflows/maven.yml  
 
   create-new-version:
+    if: github.event_name == 'push'
     needs: maven-build-test
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    outputs:
-      NEW_RELEASE_VERSION: ${{ steps.version.outputs.NEW_RELEASE_VERSION }}
 
     steps:
     - name: Checkout repository
@@ -47,10 +48,31 @@ jobs:
         patch=$(echo "$RELEASE_VERSION" | cut -d. -f3)
         new_patch=$((patch + 1))
         NEW_RELEASE_VERSION=("$major.$minor.$new_patch")
-        echo "NEW_RELEASE_VERSION=${NEW_RELEASE_VERSION}" >> "$GITHUB_OUTPUT"
         echo Updating version from ${RELEASE_VERSION} to ${NEW_RELEASE_VERSION}
         git tag v${NEW_RELEASE_VERSION}
         git push origin v${NEW_RELEASE_VERSION}
+
+  get-release-version:
+      needs: maven-build-test
+      runs-on: ubuntu-latest
+      outputs:
+        RELEASE_TYPE: ${{ steps.version.outputs.RELEASE_VERSION_TYPE }}
+        NEW_RELEASE_VERSION: ${{ steps.version.outputs.NEW_RELEASE_VERSION }}
+
+      steps:
+      - name: Get Version
+        id: version
+        shell: bash
+        run: |
+          NEW_RELEASE_VERSION_TAG=$(git describe --tags --match "v*")
+          NEW_RELEASE_VERSION=$(echo ${RELEASE_VERSION_TAG} | sed 's/^v//')
+          echo "NEW_RELEASE_VERSION=${NEW_RELEASE_VERSION}" >> "$GITHUB_OUTPUT"
+          if [ ${{github.event_name}} == 'push' ]
+          then
+            echo "RELEASE_TYPE='PATCH'" >> "$GITHUB_OUTPUT"
+          else
+            echo "RELEASE_TYPE='UPGRADE'" >> "$GITHUB_OUTPUT"
+          fi
     
 
   build-publish:
@@ -97,4 +119,4 @@ jobs:
         token: ${{ secrets.WATCHDOG_CONFIG_REPO_TOKEN }}
         repository: ${{ github.actor }}/watchdog-config
         event-type: publish-pkg
-        client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ env.SHA_TAG }}", "app_name": "watchdog-graphql", "image": "${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}", "version": "${{needs.create-new-version.outputs.NEW_RELEASE_VERSION}}", "version_type": "${{env.VERSION_TYPE}}" }'
+        client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ env.SHA_TAG }}", "app_name": "watchdog-graphql", "image": "${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}", "version": "${{needs.get-release-version.outputs.NEW_RELEASE_VERSION}}", "version_type": "${{needs.get-release-version.outputs.RELEASE_TYPE}}" }'
