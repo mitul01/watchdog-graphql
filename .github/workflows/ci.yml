@@ -36,7 +36,7 @@ jobs:
       id: version
       shell: bash
       run: |
-        if [ github.event_name == 'push' ]
+        if [ ${{github.event_name}} == 'push' ]
         then
           git fetch --prune --unshallow --tags
           git config --global user.name 'DevOpsBot'
