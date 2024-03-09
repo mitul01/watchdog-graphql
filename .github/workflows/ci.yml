@@ -8,8 +8,6 @@ on:
       - 'README.md'
       - '.github/**'
       - '.gitignore'
-  
-  create:
     tags:
       - 'v*'
 
