@@ -1,7 +1,6 @@
 package com.watchdog.watchdog.account;
 
 import com.watchdog.watchdog.dto.AccountInputDTO;
-import com.watchdog.watchdog.dto.UserInputDTO;
 import com.watchdog.watchdog.model.Account;
 
 import java.util.UUID;

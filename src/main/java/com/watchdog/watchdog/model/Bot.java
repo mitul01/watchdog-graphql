@@ -1,10 +1,20 @@
 package com.watchdog.watchdog.model;
 
-import jakarta.annotation.Nonnull;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -30,5 +40,17 @@ public class Bot {
 
 	public Bot(String name) {
 		this.name = name;
+	}
+
+	public List<String> getAllFieldNames() {
+		List<String> fieldNames = new ArrayList<>();
+		Class<?> currentClass = getClass();
+		while (currentClass != null) {
+			for (Field field : currentClass.getDeclaredFields()) {
+				fieldNames.add(field.getName());
+			}
+			currentClass = currentClass.getSuperclass();
+		}
+		return fieldNames;
 	}
 }

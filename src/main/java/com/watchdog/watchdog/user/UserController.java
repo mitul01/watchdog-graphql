@@ -1,6 +1,5 @@
 package com.watchdog.watchdog.user;
 
-import com.watchdog.watchdog.bot.BotController;
 import com.watchdog.watchdog.dto.Constants;
 import com.watchdog.watchdog.dto.UserInputDTO;
 import com.watchdog.watchdog.model.User;
