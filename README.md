@@ -3,6 +3,14 @@ Watchdog GraphQL is a backend server to serve requests from clients. It is built
 
 ## Developement
 
+### Developer Local Setup Guide
+
+1. Setup local Postgres Server & create a new database called watchdog using - ```createdb watchdog;```
+2. Build Code (Java JAR file) - ```mvn clean install -DPOSTGRES_HOST=<db-host> -DPOSTGRES_USER=<db-user> -DPOSTGRES_DB=<db-name> -DPOSTGRES_PASSWORD=<db-password>```
+3. Run Spring Service - ```mvn spring-boot:run -DPOSTGRES_HOST=<db-host> -DPOSTGRES_USER=<db-user> -DPOSTGRES_DB=<db-name> -DPOSTGRES_PASSWORD=<db-password>```
+4. Graphiql page (Interactive Graphql Page) - `http:localhost:8080/graphiql?path=/graphql`
+5. Populate local db with test data using - ```psql -h localhost -U username -d watchdog -a -f src/main/resources/sql/data.sql```
+
 ### Manage Tasks
 
 1. Create New Task 
@@ -15,14 +23,7 @@ Watchdog GraphQL is a backend server to serve requests from clients. It is built
    - Select on `Create a branch` for that issue 
    - Checkout the created branch and start working
 
-### Developer Local Setup Guide
-
-1. Setup local Postgres Server & create a new database called watchdog using - ```createdb watchdog;```
-2. Build Code (Java JAR file) - ```mvn clean install -DPOSTGRES_HOST=<db-host> -DPOSTGRES_USER=<db-user> -DPOSTGRES_DB=<db-name> -DPOSTGRES_PASSWORD=<db-password>```
-3. Run Spring Service - ```mvn spring-boot:run -DPOSTGRES_HOST=<db-host> -DPOSTGRES_USER=<db-user> -DPOSTGRES_DB=<db-name> -DPOSTGRES_PASSWORD=<db-password>```
-4. Graphiql page (Interactive Graphql Page) - `http:localhost:8080/graphiql?path=/graphql`
-
-### Iterate Flow
+### Contribute
 
 1. Create and checkout new branch respective to the issue 
 2. Commit changes to the newly created branch
@@ -31,10 +32,16 @@ Watchdog GraphQL is a backend server to serve requests from clients. It is built
 5. Get the code reviewed from others
 6. Merge the pull request
 
-### CI Tasks - Build and Publish
+## Github Workflows
 
-TODO - Build workflow(pipeline) to create container image using cloud buildpacks and publish it to dockerhub artifactory
+| Workflow File | Run On    | Steps    |
+| :---:   | :---: | :---: |
+| maven.yml | On Pull Request   | Build and test maven code   |
+| ci.yml | On Push to Main   | CI Supply Chain |
 
-### Deploy and Test
-
-TODO - Build a ArgoCD pipeline to detect new changes in main branch and trigger new deployment using the new container artifact present in dockerhub
+### CI Supply Chain
+1. Unit test code
+2. Git tag latest commit with new patch version
+3. Build Containers using pack
+4. Publish Container to ghcr.io
+5. Repository dispatch to watchdog-config to package code
