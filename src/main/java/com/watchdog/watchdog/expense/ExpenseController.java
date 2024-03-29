@@ -4,6 +4,8 @@ import com.watchdog.watchdog.dto.Constants;
 import com.watchdog.watchdog.dto.ExpenseInputDTO;
 import com.watchdog.watchdog.dto.ExpenseOwedDTO;
 import com.watchdog.watchdog.model.Expense;
+import com.watchdog.watchdog.model.FieldFilter;
+import com.watchdog.watchdog.model.enums.SortDirection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
+import java.util.List;
 import java.util.UUID;
 
 @Controller
@@ -23,9 +26,12 @@ public class ExpenseController implements UseCases {
     Logger logger = LoggerFactory.getLogger(ExpenseController.class);
 
     @QueryMapping
-    public Iterable<Expense> expenses() {
+    public Iterable<Expense> expenses(@Argument List<FieldFilter> filter,
+                                      @Argument String sortField,
+                                      @Argument SortDirection sortDirection,
+                                      @Argument int limit) {
         logger.info(Constants.getRequestInfoLogMsg.formatted("expense"));
-        return expenseService.getExpenses();
+        return expenseService.getExpenses(filter, sortField, sortDirection, limit);
     }
 
     @QueryMapping

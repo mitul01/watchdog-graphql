@@ -86,11 +86,14 @@ enum SortDirection {
 }
 # UseCases
 type Query {
-    users: [User]!
-    bots(filter: [FieldFilter], sortField: String,
-         sortDirection: SortDirection, limit: Int): [Bot]!
-    accounts: [Account]!
-    expenses: [Expense]!
+    users(filter: [FieldFilter], sortField: String = null,
+          sortDirection: SortDirection = DESC, limit: Int = 100): [User]!
+    bots(filter: [FieldFilter], sortField: String = null,
+         sortDirection: SortDirection = DESC, limit: Int = 100): [Bot]!
+    accounts(filter: [FieldFilter], sortField: String = null,
+             sortDirection: SortDirection = DESC, limit: Int = 100): [Account]!
+    expenses(filter: [FieldFilter], sortField: String = null,
+             sortDirection: SortDirection = DESC, limit: Int = 100): [Expense]!
     expenseOwed(accountId: ID, userId: ID): [ExpenseOwed]
 }
 

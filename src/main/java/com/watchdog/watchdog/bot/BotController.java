@@ -26,7 +26,7 @@ public class BotController implements UseCases{
 
     @QueryMapping
     public Iterable<Bot> bots(
-            @Argument(name = "filter") List<FieldFilter> filter,
+            @Argument List<FieldFilter> filter,
             @Argument String sortField,
             @Argument SortDirection sortDirection,
             @Argument int limit) {

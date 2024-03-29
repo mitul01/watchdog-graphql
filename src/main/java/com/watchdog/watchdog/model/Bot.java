@@ -42,15 +42,4 @@ public class Bot {
 		this.name = name;
 	}
 
-	public List<String> getAllFieldNames() {
-		List<String> fieldNames = new ArrayList<>();
-		Class<?> currentClass = getClass();
-		while (currentClass != null) {
-			for (Field field : currentClass.getDeclaredFields()) {
-				fieldNames.add(field.getName());
-			}
-			currentClass = currentClass.getSuperclass();
-		}
-		return fieldNames;
-	}
 }

@@ -1,13 +1,15 @@
 package com.watchdog.watchdog.bot;
 
+import com.watchdog.watchdog.common.Pagination;
+import com.watchdog.watchdog.common.FilterSpecifications;
+import com.watchdog.watchdog.common.FilterValidator;
 import com.watchdog.watchdog.dto.BotInputDTO;
 import com.watchdog.watchdog.dto.Constants;
 import com.watchdog.watchdog.model.Bot;
 import com.watchdog.watchdog.model.FieldFilter;
 import com.watchdog.watchdog.model.enums.SortDirection;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,29 +19,20 @@ import java.util.UUID;
 public class BotService {
 
     private final BotRepository botRepository;
+    @Autowired
+    private FilterValidator<Bot> filterValidator;
+    @Autowired
+    private Pagination pagination;
 
     public BotService(BotRepository botRepository) {
         this.botRepository = botRepository;
     }
 
     public Iterable<Bot> getBotsByCriteria(List<FieldFilter> filterMap, String sortField, SortDirection sortDirection, int limit) {
-        isFilterValid(filterMap);
-        Sort sort = Sort.by(sortDirection == SortDirection.ASC? Sort.Order.asc(sortField) : Sort.Order.desc(sortField));
-        return botRepository.findAll(
-                BotSpecifications.buildSpecification(filterMap),
-                PageRequest.of(0, limit, sort)
+        filterValidator.isFilterValid(filterMap, Bot.class);
+        return botRepository.findAll(FilterSpecifications.buildSpecification(filterMap, Bot.class),
+                pagination.createPageable(sortField, sortDirection, limit)
         );
-    }
-
-    private void isFilterValid(List<FieldFilter> filterMap) {
-        List<String> botFields = new Bot().getAllFieldNames();
-        if (filterMap != null && !filterMap.isEmpty()) {
-            filterMap.forEach(item -> {
-                if (!botFields.contains(item.getFieldName())) {
-                    throw new IllegalArgumentException("Invalid fieldName: " + item.getFieldName());
-                }
-            });
-        }
     }
     public Bot createBot(BotInputDTO botInputDTO){
         Bot bot = new Bot(botInputDTO.name().toUpperCase());
