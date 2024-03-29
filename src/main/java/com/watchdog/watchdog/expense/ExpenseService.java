@@ -1,6 +1,9 @@
 package com.watchdog.watchdog.expense;
 
 import com.watchdog.watchdog.account.AccountRepository;
+import com.watchdog.watchdog.common.Pagination;
+import com.watchdog.watchdog.common.FilterSpecifications;
+import com.watchdog.watchdog.common.FilterValidator;
 import com.watchdog.watchdog.dto.Constants;
 import com.watchdog.watchdog.dto.ExpenseInputDTO;
 import com.watchdog.watchdog.dto.ExpenseOwedDTO;
@@ -9,7 +12,9 @@ import com.watchdog.watchdog.exception.ExpenseSplitRequiredException;
 import com.watchdog.watchdog.model.Account;
 import com.watchdog.watchdog.model.Expense;
 import com.watchdog.watchdog.model.ExpenseSplit;
+import com.watchdog.watchdog.model.FieldFilter;
 import com.watchdog.watchdog.model.User;
+import com.watchdog.watchdog.model.enums.SortDirection;
 import com.watchdog.watchdog.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class ExpenseService {
@@ -32,12 +36,17 @@ public class ExpenseService {
 
     @Autowired
     private UserRepository userRepository;
-
+    @Autowired
+    private FilterValidator<Expense> filterValidator;
+    @Autowired
+    private Pagination pagination;
     @Autowired
     private AccountRepository accountRepository;
 
-    public Iterable<Expense> getExpenses(){
-        return expenseRepository.findAll();
+    public Iterable<Expense> getExpenses(List<FieldFilter> filterMap, String sortField, SortDirection sortDirection, int limit){
+        filterValidator.isFilterValid(filterMap, Expense.class);
+        return expenseRepository.findAll(FilterSpecifications.buildSpecification(filterMap, Expense.class),
+                pagination.createPageable(sortField, sortDirection, limit));
     }
 
     public Expense createExpense(ExpenseInputDTO expenseInput) {

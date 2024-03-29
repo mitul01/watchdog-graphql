@@ -3,6 +3,8 @@ package com.watchdog.watchdog.account;
 import com.watchdog.watchdog.dto.AccountInputDTO;
 import com.watchdog.watchdog.dto.Constants;
 import com.watchdog.watchdog.model.Account;
+import com.watchdog.watchdog.model.FieldFilter;
+import com.watchdog.watchdog.model.enums.SortDirection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
+import java.util.List;
 import java.util.UUID;
 
 @Controller
@@ -22,9 +25,13 @@ public class AccountController implements UseCases{
     Logger logger = LoggerFactory.getLogger(AccountController.class);
 
     @QueryMapping
-    public Iterable<Account> accounts() {
+    public Iterable<Account> accounts(
+            @Argument List<FieldFilter> filter,
+            @Argument String sortField,
+            @Argument SortDirection sortDirection,
+            @Argument int limit) {
         logger.info(Constants.getRequestInfoLogMsg.formatted("account"));
-        return accountService.getAccounts();
+        return accountService.getAccountsByCriteria(filter, sortField, sortDirection, limit);
     }
 
     @MutationMapping

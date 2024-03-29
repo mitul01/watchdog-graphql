@@ -4,7 +4,6 @@ import graphql.GraphQLError;
 import graphql.GraphqlErrorBuilder;
 import graphql.schema.DataFetchingEnvironment;
 import jakarta.persistence.EntityNotFoundException;
-import org.postgresql.util.PSQLException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.graphql.execution.DataFetcherExceptionResolverAdapter;
 import org.springframework.graphql.execution.ErrorType;
@@ -40,6 +39,13 @@ public class CustomGraphqlException extends DataFetcherExceptionResolverAdapter 
         } else if(ex instanceof DataIntegrityViolationException) {
             return GraphqlErrorBuilder.newError()
                     .errorType(ErrorType.INTERNAL_ERROR)
+                    .message(ex.getMessage())
+                    .path(env.getExecutionStepInfo().getPath())
+                    .location(env.getField().getSourceLocation())
+                    .build();
+        } else if(ex instanceof IllegalArgumentException) {
+            return GraphqlErrorBuilder.newError()
+                    .errorType(ErrorType.BAD_REQUEST)
                     .message(ex.getMessage())
                     .path(env.getExecutionStepInfo().getPath())
                     .location(env.getField().getSourceLocation())

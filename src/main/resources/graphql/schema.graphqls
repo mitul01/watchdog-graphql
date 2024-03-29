@@ -75,14 +75,28 @@ input ExpenseSplitInput {
     userId: ID!
 }
 
+input FieldFilter {
+    fieldName: String
+    fieldValue: String
+}
+
+enum SortDirection {
+ ASC,
+ DESC
+}
 # UseCases
 type Query {
-    users: [User]!
-    bots: [Bot]!
-    accounts: [Account]!
-    expenses: [Expense]!
+    users(filter: [FieldFilter], sortField: String = null,
+          sortDirection: SortDirection = DESC, limit: Int = 100): [User]!
+    bots(filter: [FieldFilter], sortField: String = null,
+         sortDirection: SortDirection = DESC, limit: Int = 100): [Bot]!
+    accounts(filter: [FieldFilter], sortField: String = null,
+             sortDirection: SortDirection = DESC, limit: Int = 100): [Account]!
+    expenses(filter: [FieldFilter], sortField: String = null,
+             sortDirection: SortDirection = DESC, limit: Int = 100): [Expense]!
     expenseOwed(accountId: ID, userId: ID): [ExpenseOwed]
 }
+
 
 type Mutation {
     createBot(bot: BotInput): Bot!
