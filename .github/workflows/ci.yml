@@ -114,7 +114,7 @@ jobs:
       uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
       with:
         registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
+        username: mitul01
         password: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Tag & Publish Image
@@ -127,6 +127,6 @@ jobs:
       uses: peter-evans/repository-dispatch@v3
       with:
         token: ${{ secrets.WATCHDOG_CONFIG_REPO_TOKEN }}
-        repository: ${{ github.actor }}/watchdog-config
+        repository: mitul01/watchdog-config
         event-type: publish-pkg
         client-payload: '{"sha": "${{ env.SHA_TAG }}", "app_name": "watchdog-graphql", "image": "${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}", "version": "${{needs.get-release-version.outputs.NEW_RELEASE_VERSION}}", "version_type": "${{needs.get-release-version.outputs.RELEASE_TYPE}}","config_change":"false" }'
