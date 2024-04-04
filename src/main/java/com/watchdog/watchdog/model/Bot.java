@@ -24,7 +24,7 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Bot {
+public class Bot extends Auditable{
 
 	@Id
 	@GeneratedValue

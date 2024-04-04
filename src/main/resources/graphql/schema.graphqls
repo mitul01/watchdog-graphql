@@ -8,12 +8,14 @@ type User {
     accounts: [Account!]
     totalExpensesPaid: [Expense]
     ownExpenses: [ExpenseSplit]
+    createdAt: String!
 }
 
 type Bot {
     botId: ID!
     name: String!
     users: [User!]
+    createdAt: String!
 }
 
 type Account {
@@ -21,6 +23,7 @@ type Account {
     name: String!
     users: [User!]
     expenses: [Expense]
+    createdAt: String!
 }
 
 type Expense {
@@ -30,6 +33,7 @@ type Expense {
     account: Account!
     paidBy: User!
     expenseSplit: [ExpenseSplit!]
+    createdAt: String!
 }
 
 type ExpenseSplit {

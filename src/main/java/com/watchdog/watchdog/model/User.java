@@ -26,7 +26,7 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class User extends Auditable {
 	@Id
 	@GeneratedValue
 	@Column(columnDefinition = "uuid", updatable = false)
