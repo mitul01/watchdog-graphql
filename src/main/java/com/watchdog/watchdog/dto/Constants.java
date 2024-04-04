@@ -3,6 +3,7 @@ package com.watchdog.watchdog.dto;
 public class Constants {
 
     public final static String defaultAccountName = "PERSONAL";
+    public static final String COMMON_DATE_TIME_FORMAT = "yyyy-MM-dd-HH:mm:ss";
 
     // Error Messages
     public final static String entityNotFoundErrorMsg = "No such %s exists";

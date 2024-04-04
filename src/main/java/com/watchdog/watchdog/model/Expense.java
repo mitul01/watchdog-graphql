@@ -24,7 +24,7 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Expense {
+public class Expense extends Auditable {
 	@Id
 	@GeneratedValue
 	@Column(columnDefinition = "uuid", updatable = false)

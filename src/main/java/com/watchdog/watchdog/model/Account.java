@@ -26,7 +26,7 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Account {
+public class Account extends Auditable {
 
 	@Id
 	@GeneratedValue
