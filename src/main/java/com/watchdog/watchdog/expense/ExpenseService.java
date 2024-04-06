@@ -22,8 +22,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class ExpenseService {
@@ -51,41 +56,38 @@ public class ExpenseService {
 
     public Expense createExpense(ExpenseInputDTO expenseInput) {
         Account account = accountRepository.findById(expenseInput.accountId()).orElseThrow(() -> new EntityNotFoundException(Constants.entityNotFoundErrorMsg.formatted("account")));
-        User paidByUser = null;
-        for(User user: account.getUsers()){
-            if(user.getUserId().equals(expenseInput.paidByUserId())){
-                 paidByUser = user;
-                 break;
-            }
+        if (expenseInput.expenseSplit() == null || expenseInput.expenseSplit().isEmpty()) {
+            throw new ExpenseSplitRequiredException(Constants.expenseSplitRequiredErrorMsg);
         }
-        if(paidByUser == null){
+        Set<UUID> requiredUserIds = new HashSet<>();
+        requiredUserIds.add(expenseInput.paidByUserId());
+        requiredUserIds.addAll(expenseInput.expenseSplit().stream().map(ExpenseSplitInputDTO::userId).collect(Collectors.toSet()));
+        if (!accountContainsAllUsers(account, requiredUserIds)) {
             throw new EntityNotFoundException(Constants.userNotFoundInAccountErrorMsg);
         }
+        Map<UUID, User> userMap = account.getUsers().stream().collect(Collectors.toMap(User::getUserId, Function.identity()));
+        User paidByUser = userMap.get(expenseInput.paidByUserId());
         Expense expense = new Expense(expenseInput.name(),expenseInput.amount(),account,paidByUser);
-
-        // Update expense split table
-        List<ExpenseSplit> expenseSplitList = new ArrayList<>();
-        Float totalSplitSum = 0.0f;
         if(expense.getAccount().getUsers().size() > 1) {
-            if(expenseInput.expenseSplit() != null) {
-                for (ExpenseSplitInputDTO expenseSplitInput : expenseInput.expenseSplit()) {
-                    User user = userRepository.findById(expenseSplitInput.userId()).orElseThrow(() -> new EntityNotFoundException(Constants.entityNotFoundErrorMsg.formatted("user")));
-                    ExpenseSplit expenseSplit = new ExpenseSplit(expense, user, expenseSplitInput.amount(), expense.getName());
-                    expenseSplitList.add(expenseSplit);
-                    totalSplitSum += expenseSplit.getAmount();
-                }
-                assert totalSplitSum.equals(expense.getAmount()) : new AssertionError(Constants.expenseSplitSumNotMatchErrorMsg);
-                expenseRepository.save(expense);
-                expenseSplitRepository.saveAll(expenseSplitList);
-            } else {
-               throw new ExpenseSplitRequiredException(Constants.expenseSplitRequiredErrorMsg);
+            List<ExpenseSplit> expenseSplitList = expenseInput.expenseSplit().stream().map(expenseSplitInput -> {
+                User user = userMap.get(expenseSplitInput.userId());
+                return new ExpenseSplit(expense, user, expenseSplitInput.amount(), expense.getName());
+            }).collect(Collectors.toList());
+            Float totalSplitSum = expenseSplitList.stream().map(ExpenseSplit::getAmount).reduce(0.0f, Float::sum);
+            if (!totalSplitSum.equals(expense.getAmount())) {
+                throw new AssertionError(Constants.expenseSplitSumNotMatchErrorMsg);
             }
-        } else {
-            expenseRepository.save(expense);
+            expenseSplitRepository.saveAll(expenseSplitList);
         }
-
+        expenseRepository.save(expense);
         return expense;
+    }
 
+    private boolean accountContainsAllUsers(Account account, Set<UUID> requiredUserIds) {
+        Set<UUID> accountUserIds = account.getUsers().stream()
+                .map(User::getUserId)
+                .collect(Collectors.toSet());
+        return accountUserIds.containsAll(requiredUserIds);
     }
 
     public Expense updateExpense(UUID expenseId, ExpenseInputDTO expenseInput){
