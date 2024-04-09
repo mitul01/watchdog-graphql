@@ -1,15 +1,6 @@
 package com.watchdog.watchdog.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,16 +24,11 @@ public class User extends Auditable {
 	private UUID userId;
 
 	@NotNull
+	@Column(updatable = false, unique = true)
 	private String userName;
 
-	private String firstName;
-
-	private String lastName;
-
-	public User(String userName, String firstName, String lastName, Set<Bot> installedBots) {
+	public User(String userName, Set<Bot> installedBots) {
 		this.userName = userName;
-		this.firstName = firstName;
-		this.lastName = lastName;
 		this.installedBots = installedBots;
 	}
 
@@ -63,4 +49,5 @@ public class User extends Auditable {
 
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = false)
 	private List<ExpenseSplit> ownExpenses;
+
 }

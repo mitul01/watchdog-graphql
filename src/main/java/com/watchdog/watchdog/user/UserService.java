@@ -46,7 +46,7 @@ public class UserService {
     public User createUser(UserInputDTO userInput){
         Set<Bot> installedBots = new HashSet<>();
         installedBots.add(botRepository.findById(userInput.botId()).orElseThrow(() -> new EntityNotFoundException(Constants.entityNotFoundErrorMsg.formatted("user"))));
-        User user = new User(userInput.userName(),userInput.firstName(),userInput.lastName(),installedBots);
+        User user = new User(userInput.userName(),installedBots);
         userRepository.save(user);
         accountService.createDefaultAccount(user);
         return user;
@@ -55,8 +55,6 @@ public class UserService {
     public User updateUser(UUID userId, UserInputDTO userInput){
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(Constants.entityNotFoundErrorMsg.formatted("user")));
         if (userInput.userName()  != null) user.setUserName(userInput.userName());
-        if (userInput.firstName()  != null) user.setFirstName(userInput.firstName());
-        if (userInput.lastName()  != null) user.setLastName(userInput.lastName());
         if (userInput.botId()  != null) {
             Set<Bot> installedBots = user.getInstalledBots();
             installedBots.add(botRepository.findById(userInput.botId()).orElseThrow(() -> new EntityNotFoundException(Constants.entityNotFoundErrorMsg.formatted("bot"))));
@@ -67,7 +65,7 @@ public class UserService {
     }
 
     public Boolean deleteUser(UUID userId){
-        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(Constants.entityNotFoundErrorMsg.formatted("bot")));
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(Constants.entityNotFoundErrorMsg.formatted("user")));
         userRepository.delete(user);
         return true;
     }
