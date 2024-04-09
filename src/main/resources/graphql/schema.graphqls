@@ -2,8 +2,6 @@
 type User {
     userId: ID!
     userName: String!
-    firstName: String!
-    lastName: String!
     installedBots: [Bot!]!
     accounts: [Account!]
     totalExpensesPaid: [Expense]
@@ -49,6 +47,14 @@ type ExpenseOwed {
     owedAmount: Float!
 }
 
+type Context {
+    chatId: ID!
+    bot: Bot!
+    user: User!
+    account: Account!
+    createdAt: String!
+}
+
 # DTO
 input BotInput {
     name: String
@@ -56,8 +62,6 @@ input BotInput {
 
 input UserInput {
     userName: String
-    firstName: String
-    lastName: String
     botId: ID
 }
 
@@ -77,6 +81,13 @@ input ExpenseInput {
 input ExpenseSplitInput {
     amount: Float!
     userId: ID!
+}
+
+input ContextInput {
+    chatId: String!
+    botId: ID!
+    userId: ID!
+    accountId: ID!
 }
 
 input FieldFilter {
@@ -99,6 +110,8 @@ type Query {
     expenses(filter: [FieldFilter], sortField: String = null,
              sortDirection: SortDirection = DESC, limit: Int = 100): [Expense]!
     expenseOwed(accountId: ID, userId: ID): [ExpenseOwed]
+    contexts(filter: [FieldFilter], sortField: String = null,
+        sortDirection: SortDirection = DESC, limit: Int = 100): [Context]!
 }
 
 
@@ -118,4 +131,8 @@ type Mutation {
     createExpense(expense: ExpenseInput): Expense!
     updateExpense(expenseId: ID,expense: ExpenseInput): Expense!
     deleteExpense(expenseId: ID): Boolean!
+
+    createContext(context: ContextInput): Context!
+    updateContext(chatId: ID,context: ContextInput): Context!
+    deleteContext(chatId: ID): Boolean!
 }
