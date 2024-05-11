@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - 'main'
-    paths-ignore:
-      - 'README.md'
-      - '.github/**'
-      - '.gitignore'
 
 env:
   CARVEL_PKG_NAME: watchdog-graphql.local.com
@@ -27,6 +23,13 @@ jobs:
           wget -O- https://carvel.dev/install.sh > install.sh
           chmod a+x ./install.sh
           sudo bash install.sh
+
+      - name: Install BuildPack Tool
+        shell: bash
+        run: |
+          sudo add-apt-repository ppa:cncf-buildpacks/pack-cli -y
+          sudo apt-get update -y
+          sudo apt-get install pack-cli -y
 
       - name: Checkout
         uses: actions/checkout@v4
