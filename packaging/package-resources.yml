@@ -18,6 +18,7 @@ spec:
           - config
       - kbld:
           paths:
+          - kbld-config.yml
           - config
   valuesSchema:
     openAPIv3: null
