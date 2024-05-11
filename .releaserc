@@ -4,6 +4,15 @@
     ],
     "plugins": [
         "@semantic-release/commit-analyzer",
+<<<<<<< Updated upstream
+=======
+        [
+            "@semantic-release/exec", {
+                "verifyReleaseCmd": "cd packaging && kctrl package release --version ${nextRelease.version} -y"
+            }
+        ]
+
+>>>>>>> Stashed changes
         "@semantic-release/release-notes-generator",
         [
             "@semantic-release/changelog",
