@@ -6,11 +6,7 @@ psqlSecretName: "watchdog-graphql-psql-secret"
 image: watchdog-graphql
 replicas: 1
 label:
-<<<<<<< Updated upstream
-  version: 1.0.1
-=======
   version: 1.0.0
->>>>>>> Stashed changes
   component: graphql
   partOf: watchdog
   managedBy: kapp-controller
