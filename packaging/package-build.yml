@@ -1,0 +1,27 @@
+apiVersion: kctrl.carvel.dev/v1alpha1
+kind: PackageBuild
+metadata:
+  creationTimestamp: null
+  name: watchdog-graphql.local.com
+spec:
+  release:
+  - resource: {}
+  template:
+    spec:
+      app:
+        spec:
+          deploy:
+          - kapp: {}
+          template:
+          - ytt:
+              paths:
+              - config
+          - kbld:
+              paths:
+              - config
+      export:
+      - imgpkgBundle:
+          image: ghcr.io/mitul01/watchdog-graphql.local.com
+          useKbldImagesLock: true
+        includePaths:
+        - config
