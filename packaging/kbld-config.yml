@@ -1,0 +1,12 @@
+---
+apiVersion: kbld.k14s.io/v1alpha1
+kind: Config
+sources:
+  - image: watchdog-graphql
+    path: ../
+    pack:
+      build:
+        builder: paketobuildpacks/builder-jammy-tiny
+destinations:
+  - image: watchdog-graphql
+    newImage: ghcr.io/mitul01/watchdog-graphql

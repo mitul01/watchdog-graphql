@@ -1,0 +1,21 @@
+#@data/values
+---
+name: "watchdog-graphql"
+namespace: watchdog
+psqlSecretName: "watchdog-graphql-psql-secret"
+image: watchdog-graphql
+replicas: 1
+label:
+  version: 1.0.1
+  component: graphql
+  partOf: watchdog
+  managedBy: kapp-controller
+service:
+  containerPort: 8080
+  externalPort: 8080
+env:
+  psql:
+    postgresDB: watchdog
+    postgresHost: localhost
+    postgresUser: postgres
+    postgresPassword: postgres

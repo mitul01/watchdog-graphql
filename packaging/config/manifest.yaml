@@ -1,0 +1,115 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:base64", "base64")
+
+#@ def labels():
+app.kubernetes.io/name: #@ data.values.name
+app.kubernetes.io/version: #@ data.values.label.version
+app.kubernetes.io/component: #@ data.values.label.component
+app.kubernetes.io/part-of: #@ data.values.label.partOf
+app.kubernetes.io/managed-by: #@ data.values.label.managedBy
+#@ end
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: #@ data.values.name
+  namespace: #@ data.values.namespace
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  selector:
+    matchLabels: #@ labels()
+  replicas: #@ data.values.replicas
+  template:
+    metadata:
+      labels: #@ labels()
+    spec:
+      imagePullSecrets:
+      - name: watchdog-graphql-fetch-0
+      containers:
+        - name: #@ data.values.name
+          image: #@ data.values.image
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: #@ data.values.service.containerPort
+              name: http
+            - containerPort: 5432
+              name: postgres
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: #@ data.values.psqlSecretName
+                  key: postgresDB
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: #@ data.values.psqlSecretName
+                  key: postgresHost
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: #@ data.values.psqlSecretName
+                  key: postgresUser
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: #@ data.values.psqlSecretName
+                  key: postgresPassword
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: #@ data.values.name
+  namespace: #@ data.values.namespace
+spec:
+  selector: #@ labels()
+  ports:
+    - port: #@ data.values.service.externalPort
+      targetPort: #@ data.values.service.containerPort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: #@ data.values.namespace
+spec:
+  selector: #@ labels()
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: #@ data.values.name
+  namespace: #@ data.values.namespace
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: graphql.watchdog.io
+      http:
+        paths:
+          - path: "/"
+            pathType: Prefix
+            backend:
+              service:
+                name: #@ data.values.name
+                port:
+                  number: #@ data.values.service.externalPort
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: #@ data.values.psqlSecretName
+  namespace: #@ data.values.namespace
+type: Opaque
+data:
+  postgresHost: #@ base64.encode(data.values.env.psql.postgresHost)
+  postgresDB: #@ base64.encode(data.values.env.psql.postgresDB)
+  postgresUser: #@ base64.encode(data.values.env.psql.postgresUser)
+  postgresPassword: #@ base64.encode(data.values.env.psql.postgresPassword)

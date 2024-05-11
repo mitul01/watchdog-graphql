@@ -9,124 +9,60 @@ on:
       - '.github/**'
       - '.gitignore'
 
-  release:
-    types: [published]
-
 env:
-  REGISTRY: ghcr.io
-  # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}
-  # buildpack builder
-  BUILDER: paketobuildpacks/builder-jammy-tiny
-  
-jobs:
-  maven-build-test:
-    uses: ./.github/workflows/maven.yml  
+  CARVEL_PKG_NAME: watchdog-graphql.local.com
+  REACTOR_REPO: mitul01/watchdog-reactor
 
-  create-new-version:
-    needs: maven-build-test
+jobs:
+  ci:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
+      packages: write
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
 
-    - name: Add new version to latest commit
-      id: version
-      shell: bash
-      run: |
-        if [ ${{github.event_name}} == 'push' ]
-        then
-          git fetch --prune --unshallow --tags
-          git config --global user.name 'DevOpsBot'
-          git config --global user.email 'devops-bot@users.noreply.github.com'
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-          RELEASE_VERSION_TAG=$(git tag --sort=taggerdate | tail -1)
-          RELEASE_VERSION=$(echo ${RELEASE_VERSION_TAG} | sed 's/^v//')
-          major=$(echo "$RELEASE_VERSION" | cut -d. -f1)
-          minor=$(echo "$RELEASE_VERSION" | cut -d. -f2)
-          patch=$(echo "$RELEASE_VERSION" | cut -d. -f3)
-          new_patch=$((patch + 1))
-          NEW_RELEASE_VERSION=("$major.$minor.$new_patch")
-          echo Updating version from ${RELEASE_VERSION} to ${NEW_RELEASE_VERSION}
-          git tag v${NEW_RELEASE_VERSION}
-          git push origin v${NEW_RELEASE_VERSION}
-        else
-          echo "Upgrade release type. Skipping Creation of patch version..."
-        fi
-
-  get-release-version:
-      needs: create-new-version
-      runs-on: ubuntu-latest
-      outputs:
-        RELEASE_TYPE: ${{ steps.version.outputs.RELEASE_TYPE }}
-        NEW_RELEASE_VERSION: ${{ steps.version.outputs.NEW_RELEASE_VERSION }}
-
-      steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      
-      - name: Get Version
-        id: version
+      - name: Install Carvel Tool
         shell: bash
         run: |
-          git fetch --prune --unshallow --tags
-          NEW_RELEASE_VERSION_TAG=$(git describe --tags --match "v*")
-          NEW_RELEASE_VERSION=$(echo ${NEW_RELEASE_VERSION_TAG} | sed 's/^v//')
-          echo ${NEW_RELEASE_VERSION}
-          echo "NEW_RELEASE_VERSION=${NEW_RELEASE_VERSION}" >> "$GITHUB_OUTPUT"
-          if [ ${{github.event_name}} == 'push' ]
-          then
-            echo "RELEASE_TYPE='PATCH'" >> "$GITHUB_OUTPUT"
-          else
-            echo "RELEASE_TYPE='UPGRADE'" >> "$GITHUB_OUTPUT"
-          fi
-    
+          wget -O- https://carvel.dev/install.sh > install.sh
+          chmod a+x ./install.sh
+          sudo bash install.sh
 
-  build-publish:
-    needs: get-release-version
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      
-    - name: Setup Pack CLI
-      uses: buildpacks/github-actions/setup-pack@v5.0.0
-  
-    - name: Extract Git Metadata
-      shell: bash
-      run: |
-        echo "SHA_TAG=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
-        echo "BRANCH=$(echo ${GITHUB_REF#refs/heads/})" >> "$GITHUB_ENV"
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v4
+        id: semantic
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
 
-    - name: Build Image using Pack CLI
-      run: |
-        #!/usr/bin/env bash
-        pack build ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}} --path . --builder ${{env.BUILDER}}
+      - name: Login to GitHub Container Registry
+        if: steps.semantic.outputs.new_release_published == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: mitul01
+          password: ${{ secrets.PAT }}
 
-    - name: Log into registry ${{ env.REGISTRY }}
-      uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: mitul01
-        password: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Tag & Publish Image
-      run: |
-        docker tag ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}} ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{needs.get-release-version.outputs.NEW_RELEASE_VERSION}}
-        docker push ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{env.SHA_TAG}}
-        docker push ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{needs.get-release-version.outputs.NEW_RELEASE_VERSION}}
-    
-    - name: Repository Dispatch to watchdog-config
-      uses: peter-evans/repository-dispatch@v3
-      with:
-        token: ${{ secrets.WATCHDOG_CONFIG_REPO_TOKEN }}
-        repository: mitul01/watchdog-config
-        event-type: publish-pkg
-        client-payload: '{"sha": "${{ env.SHA_TAG }}", "app_name": "watchdog-graphql", "image": "${{env.REGISTRY}}/${{env.IMAGE_NAME}}:${{needs.get-release-version.outputs.NEW_RELEASE_VERSION}}", "version": "${{needs.get-release-version.outputs.NEW_RELEASE_VERSION}}", "version_type": "${{needs.get-release-version.outputs.RELEASE_TYPE}}","config_change":"false" }'
+      - name: Release New Package
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          cd packaging
+          kctrl package release --version ${{ steps.semantic.outputs.new_release_version }} -y
+
+      - name: Push generated package to another repository
+        if: steps.semantic.outputs.new_release_published == 'true'
+        shell: bash
+        run: |
+          git config --global user.name 'DevOpsBot'
+          git config --global user.email 'devops-bot@users.noreply.github.com'
+          git clone https://x-access-token:${{ secrets.PAT }}@github.com/${{ env.REACTOR_REPO }}
+          git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/${{ env.REACTOR_REPO }}
+          cp -r packaging/carvel-artifacts/packages/${{ env.CARVEL_PKG_NAME }}/. watchdog-reactor/packages/${{ env.CARVEL_PKG_NAME }}/${{ steps.semantic.outputs.new_release_version }}/
+          cd watchdog-reactor
+          git add .
+          git commit -m "chore(publish-package): ${{ env.CARVEL_PKG_NAME }}:${{ steps.semantic.outputs.new_release_version }}"
+          git push origin

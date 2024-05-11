@@ -1,0 +1,54 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  creationTimestamp: null
+  name: watchdog-graphql.local.com.0.0.0
+spec:
+  refName: watchdog-graphql.local.com
+  releasedAt: null
+  template:
+    spec:
+      deploy:
+      - kapp: {}
+      fetch:
+      - git: {}
+      template:
+      - ytt:
+          paths:
+          - config
+      - kbld:
+          paths:
+          - config
+  valuesSchema:
+    openAPIv3: null
+  version: 0.0.0
+
+---
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: PackageMetadata
+metadata:
+  creationTimestamp: null
+  name: watchdog-graphql.local.com
+spec:
+  displayName: watchdog-graphql
+  longDescription: An expense management GraphQL backend server is a backend system designed to handle expense-related operations and data management using the GraphQL query language. It allows clients to efficiently retrieve, update, create, and delete expense-related data through well-defined GraphQL schemas and queries.
+  shortDescription: Watchdog Graphql server to handle expense-related operations and data management
+
+---
+apiVersion: packaging.carvel.dev/v1alpha1
+kind: PackageInstall
+metadata:
+  annotations:
+    kctrl.carvel.dev/local-fetch-0: .
+  creationTimestamp: null
+  name: watchdog-graphql
+spec:
+  packageRef:
+    refName: watchdog-graphql.local.com
+    versionSelection:
+      constraints: 0.0.0
+  serviceAccountName: watchdog-graphql-sa
+status:
+  conditions: null
+  friendlyDescription: ""
+  observedGeneration: 0
