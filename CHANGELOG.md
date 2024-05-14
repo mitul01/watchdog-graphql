@@ -1,3 +1,11 @@
+## [1.0.1](https://github.com/mitul01/watchdog-graphql/compare/v1.0.0...v1.0.1) (2024-05-14)
+
+
+### Bug Fixes
+
+* Add nodePort and ingress support in graphql service ([2b1f3dc](https://github.com/mitul01/watchdog-graphql/commit/2b1f3dc0cf9ddcc738378228d929d28ebc89fc43))
+* Set default service value to ClusterIP ([b7f2dda](https://github.com/mitul01/watchdog-graphql/commit/b7f2ddad94fb03cd4be8ada34a8043e3aff4028f))
+
 # 1.0.0 (2024-05-11)
 
 
