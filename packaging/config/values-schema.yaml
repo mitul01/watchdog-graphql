@@ -1,18 +1,29 @@
-#@data/values
+#@data/values-schema
 ---
 name: "watchdog-graphql"
 namespace: watchdog
 psqlSecretName: "watchdog-graphql-psql-secret"
 image: watchdog-graphql
 replicas: 1
+
 label:
   version: 1.0.0
   component: graphql
   partOf: watchdog
   managedBy: kapp-controller
+
 service:
+  type: NodePort
   containerPort: 8080
   externalPort: 8080
+
+  #@schema/nullable
+  nodePort: 30000
+
+  #@schema/nullable
+  ingress:
+    host: ""
+
 env:
   psql:
     postgresDB: watchdog

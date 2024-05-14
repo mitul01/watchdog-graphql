@@ -1,5 +1,6 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:base64", "base64")
+#@ load("@ytt:assert", "assert")
 
 #@ def labels():
 app.kubernetes.io/name: #@ data.values.name
@@ -65,9 +66,13 @@ metadata:
   namespace: #@ data.values.namespace
 spec:
   selector: #@ labels()
+  type: #@ data.values.service.type
   ports:
     - port: #@ data.values.service.externalPort
       targetPort: #@ data.values.service.containerPort
+      #@ if data.values.service.type == 'NodePort':
+      nodePort: #@ data.values.service.nodePort or assert.fail("nodePort must be set when service type is NodePort under values.service.nodePort")
+      #@ end
 ---
 apiVersion: v1
 kind: Service
@@ -80,6 +85,7 @@ spec:
     - port: 5432
       targetPort: 5432
 ---
+#@ if data.values.service.ingress:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -91,7 +97,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: graphql.watchdog.io
+    - host: #@ data.values.service.ingress.host or assert.fail("ingress host must be set under values.service.ingress.host")
       http:
         paths:
           - path: "/"
@@ -101,6 +107,7 @@ spec:
                 name: #@ data.values.name
                 port:
                   number: #@ data.values.service.externalPort
+#@ end
 ---
 apiVersion: v1
 kind: Secret
