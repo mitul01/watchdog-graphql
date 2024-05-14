@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/mitul01/watchdog-graphql/compare/v1.0.1...v1.0.2) (2024-05-14)
+
+
+### Bug Fixes
+
+* context schema ([2b6affa](https://github.com/mitul01/watchdog-graphql/commit/2b6affada470375bad2675dcfc0cb8986195d222))
+
 ## [1.0.1](https://github.com/mitul01/watchdog-graphql/compare/v1.0.0...v1.0.1) (2024-05-14)
 
 
