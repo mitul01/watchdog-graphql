@@ -19,15 +19,15 @@ public class Context extends Auditable {
 
     @Id
     @NotNull
-    @Column(updatable = false, unique = true)
+    @Column(updatable = false)
     private String chatId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bot.botId", updatable = false, unique = true)
+    @JoinColumn(name = "bot.botId", updatable = false)
     private Bot bot;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userbase.userId", updatable = false, unique = true)
+    @JoinColumn(name = "userbase.userId", updatable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
